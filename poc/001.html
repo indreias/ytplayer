@@ -1,0 +1,63 @@
+<div id="ytPlayer"></div>
+
+<script>
+
+  videoIDs = [
+    ['z6xpN_yxpnw',600,620],
+    ['GA6CRfrUCyI',600,620],
+    ['SQP4Upz5jqc',600,620],
+  ]
+  var currentVideoId = 0
+
+  // Load the IFrame Player API code asynchronously.
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/player_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  // Replace the 'ytPlayer' element with an <iframe> and
+  // YouTube player after the API code downloads.
+  var player;
+  function onYouTubePlayerAPIReady() {
+    player = new YT.Player('ytPlayer', {
+      height: '315',
+      width: '560',
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    })
+  }
+  
+  function onPlayerReady(event) {
+    v = videoIDs[currentVideoId]
+    event.target.mute()
+    event.target.loadVideoById(
+      { videoId: v[0], startSeconds: v[1], endSeconds: v[2] }
+    )
+  }
+  
+  // Need special logic at it seems ENDED event is trigger twice when not starting from beginning
+  var videoStarted = false
+  function onPlayerStateChange(event) {
+    console.log('playerState: ' + event.data + ' currentTime:' + event.target.getCurrentTime())
+    if (event.data == YT.PlayerState.PLAYING) {
+      videoStarted = true
+    }
+    if (event.data == YT.PlayerState.ENDED) {
+      if (videoStarted) {
+        currentVideoId++
+        videoStarted = false
+        if (currentVideoId == videoIDs.length) {
+          currentVideoId = 0
+        }
+        console.log('id: ' + currentVideoId)
+	v = videoIDs[currentVideoId]
+        event.target.loadVideoById(
+          { videoId: v[0], startSeconds: v[1], endSeconds: v[2] }
+        )
+      }
+    }
+  }
+  
+</script>
